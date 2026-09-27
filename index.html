@@ -34,28 +34,34 @@
   .nav-cta { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 10px 24px; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: background-color 0.2s ease, color 0.2s ease; font-family: 'Inter', sans-serif; }
   @media (hover: hover) and (pointer: fine) { .nav-cta:hover { background: var(--gold); color: var(--black); } }
 
-  /* HERO -- split layout: offer text on the left, interactive photo on the
-     right, overlapping slightly so the photo card reads as sitting in front
-     of the text (a side depth cue) without any pixel-level text-behind-face
-     compositing, which is what caused the transparency bugs. */
-  #hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; padding: 110px 40px 60px; }
-  .hero-grid {
-    width: 100%; max-width: 1400px; margin: 0 auto;
-    display: grid; grid-template-columns: 1fr 1.15fr; align-items: center; gap: 0;
-  }
-  .hero-text { position: relative; z-index: 1; padding-right: 24px; }
-  .hero-photo-col { position: relative; z-index: 2; margin-left: -70px; }
+  /* HERO -- full-bleed interactive photo fills the whole first screen, no
+     card/frame around it. Offer text floats on the right of the subject,
+     CTA buttons float on the left -- plain overlaid text/buttons, not a
+     pixel-compositing trick, so there is nothing to break. */
+  #hero { position: relative; height: 100vh; min-height: 640px; overflow: hidden; }
 
-  .hero-text, .hero-photo-col {
-    opacity: 0; transform: translateY(22px);
-    animation: heroIn 0.7s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  #canvas-wrapper {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    cursor: none; background: #000;
   }
-  .hero-text { animation-delay: 0.1s; }
-  .hero-photo-col { animation-delay: 0.25s; }
-  @keyframes heroIn { to { opacity: 1; transform: translateY(0); } }
+  #main-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 1; }
+
+  .hero-side-left, .hero-side-right {
+    position: absolute; top: 50%; transform: translateY(-50%); z-index: 20;
+    opacity: 0; animation: heroSideIn 0.7s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  }
+  .hero-side-left {
+    left: 5%; display: flex; flex-direction: column; gap: 16px; align-items: flex-start;
+    animation-delay: 0.25s; transform: translateY(-50%) translateX(-14px);
+  }
+  .hero-side-right {
+    right: 5%; max-width: 420px; text-align: right;
+    animation-delay: 0.1s; transform: translateY(-50%) translateX(14px);
+  }
+  @keyframes heroSideIn { to { opacity: 1; transform: translateY(-50%) translateX(0); } }
   @media (prefers-reduced-motion: reduce) {
-    .hero-text, .hero-photo-col { animation: heroInReduced 0.4s ease forwards; }
-    @keyframes heroInReduced { to { opacity: 1; } }
+    .hero-side-left, .hero-side-right { animation: heroSideInReduced 0.4s ease forwards; }
+    @keyframes heroSideInReduced { to { opacity: 1; transform: translateY(-50%); } }
   }
 
   .offer-content { transition: opacity 0.3s ease; }
@@ -63,35 +69,39 @@
   .offer-badge {
     display: inline-block; font-family: 'Inter', sans-serif; font-size: 12px;
     letter-spacing: 3px; text-transform: uppercase; color: var(--gold);
-    border: 1px solid rgba(201,169,97,0.45); padding: 6px 16px; margin-bottom: 22px;
+    border: 1px solid rgba(201,169,97,0.5); padding: 6px 16px; margin-bottom: 20px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.9);
   }
-  .offer-headline { line-height: 0.95; margin-bottom: 20px; }
+  .offer-headline { line-height: 0.95; margin-bottom: 18px; }
   .offer-line1 {
     display: block; font-family: 'Playfair Display', serif; font-weight: 900;
-    font-size: clamp(22px, 2.8vw, 32px); color: #fff; letter-spacing: -0.5px;
+    font-size: clamp(20px, 2.4vw, 28px); color: #fff; letter-spacing: -0.5px;
+    text-shadow: 0 3px 20px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.95);
   }
-  .offer-line2 { display: block; font-size: clamp(46px, 6vw, 88px); margin-top: 6px; }
-  .offer-sub { font-size: clamp(14px, 1.5vw, 17px); color: var(--gray-text); max-width: 440px; line-height: 1.6; margin-bottom: 32px; }
+  .offer-line2 {
+    display: block; font-size: clamp(40px, 5vw, 76px); margin-top: 4px;
+    text-shadow: 0 3px 26px rgba(0,0,0,0.85), 0 1px 4px rgba(0,0,0,0.95);
+  }
+  .offer-sub {
+    font-size: clamp(13px, 1.3vw, 15px); color: rgba(255,255,255,0.82); max-width: 380px;
+    line-height: 1.6; margin-left: auto; text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+  }
   .font-marker { font-family: 'Permanent Marker', cursive; }
   .font-bangers { font-family: 'Bangers', cursive; letter-spacing: 2px; }
   .font-caveat { font-family: 'Caveat', cursive; font-weight: 700; }
 
-  /* CANVAS AREA */
-  #canvas-wrapper {
-    width: 100%; margin: 0 auto;
-    position: relative; cursor: none; aspect-ratio: 16/9;
-    border-radius: 2px; overflow: hidden;
-    box-shadow: 0 20px 90px rgba(0,0,0,0.85);
-    background: #0a0a0a;
-  }
-  #main-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 3; }
-
   @media (max-width: 900px) {
-    .hero-grid { grid-template-columns: 1fr; gap: 36px; text-align: center; }
-    .hero-text { padding-right: 0; }
-    .hero-photo-col { margin-left: 0; }
+    #hero { height: auto; min-height: 100vh; display: flex; flex-direction: column; }
+    #canvas-wrapper { position: relative; height: 58vh; min-height: 360px; flex-shrink: 0; order: 1; }
+    #hero .scroll-indicator { display: none; }
+    .hero-side-left, .hero-side-right {
+      position: relative; inset: auto; left: auto; right: auto; top: auto;
+      transform: none !important; text-align: center; align-items: center;
+      max-width: 100%; width: 100%; padding: 28px 24px 0;
+    }
+    .hero-side-right { order: 2; }
+    .hero-side-left { order: 3; padding-bottom: 36px; }
     .offer-sub { margin-left: auto; margin-right: auto; }
-    .hero-actions { justify-content: center; }
   }
   #cursor-ring {
     position: absolute; pointer-events: none; z-index: 10;
@@ -107,30 +117,32 @@
 
   .canvas-overlay {
     position: absolute; inset: 0; pointer-events: none; z-index: 4;
-    background: linear-gradient(to bottom, transparent 65%, rgba(26,26,26,0.5) 100%);
+    background:
+      linear-gradient(to right, rgba(8,8,8,0.6) 0%, transparent 24%, transparent 76%, rgba(8,8,8,0.6) 100%),
+      linear-gradient(to bottom, transparent 72%, rgba(8,8,8,0.55) 100%),
+      linear-gradient(to top, transparent 88%, rgba(8,8,8,0.35) 100%);
   }
   .canvas-hint {
-    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 6;
-    background: rgba(26,26,26,0.88); border: 1px solid rgba(201,169,97,0.35);
-    color: var(--gold); font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
-    padding: 9px 22px; pointer-events: none; white-space: nowrap;
-    transition: opacity 0.6s;
+    position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 6;
+    color: rgba(255,255,255,0.5); font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    pointer-events: none; white-space: nowrap; font-weight: 500;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.95);
+    transition: opacity 0.6s ease;
   }
   .style-label {
-    position: absolute; top: 18px; left: 18px; z-index: 6;
-    background: rgba(26,26,26,0.88); border: 1px solid rgba(201,169,97,0.35);
+    position: absolute; top: 100px; left: 24px; z-index: 6;
     color: var(--gold); font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
-    padding: 7px 16px; transition: opacity 0.3s;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+    transition: opacity 0.3s ease;
   }
   .photo-counter {
-    position: absolute; top: 18px; right: 18px; z-index: 6;
-    background: rgba(26,26,26,0.88); border: 1px solid rgba(255,255,255,0.08);
-    color: rgba(255,255,255,0.5); font-size: 11px; letter-spacing: 2px;
-    padding: 7px 16px;
+    position: absolute; top: 100px; right: 24px; z-index: 6;
+    color: rgba(255,255,255,0.55); font-size: 11px; letter-spacing: 2px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.9);
   }
   .progress-row {
-    position: absolute; bottom: 20px; right: 18px; z-index: 6;
-    display: flex; gap: 5px;
+    position: absolute; bottom: 46px; left: 50%; transform: translateX(-50%); z-index: 6;
+    display: flex; gap: 6px;
   }
   .pdot { width: 7px; height: 7px; border-radius: 50%; border: 1px solid rgba(201,169,97,0.5); transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; }
   .pdot.on { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 6px rgba(201,169,97,0.6); }
@@ -143,7 +155,7 @@
   }
 
   /* ACTIONS */
-  .hero-actions { margin-top: 4px; display: flex; gap: 16px; flex-wrap: wrap; }
+  .hero-actions { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
   .btn-primary { background: var(--gold); color: var(--black); border: none; padding: 16px 40px; font-family: 'Inter', sans-serif; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; font-weight: 600; transition: background-color 0.2s ease, transform 0.2s ease; }
   .btn-secondary { background: transparent; color: var(--white); border: 1px solid rgba(255,255,255,0.3); padding: 16px 40px; font-family: 'Inter', sans-serif; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: border-color 0.2s ease, color 0.2s ease; }
   @media (hover: hover) and (pointer: fine) {
@@ -248,6 +260,7 @@
     .gallery-grid { grid-template-columns: repeat(2, 1fr); }
     #canvas-wrapper { cursor: crosshair; }
     #cursor-ring { display: none; }
+    .scroll-indicator { display: none; }
   }
   @media (max-width: 480px) { .gallery-grid { grid-template-columns: 1fr; } }
 
@@ -280,43 +293,43 @@
 </nav>
 
 <div id="hero">
-  <div class="hero-grid">
-    <div class="hero-text">
-      <div class="offer-content" id="offer-content">
-        <div class="offer-badge" id="offer-badge">АКЦИЯ НЕДЕЛИ</div>
-        <h1 class="offer-headline">
-          <span class="offer-line1" id="offer-line1">ПЕРВАЯ</span>
-          <span class="offer-line2 font-marker" id="offer-line2" style="color:#c9a961">СКИДКА 20%</span>
-        </h1>
-        <p class="offer-sub" id="offer-sub">На первое посещение. Успей записаться!</p>
-      </div>
-      <div class="hero-actions">
-        <button class="btn-primary" onclick="document.getElementById('contacts').scrollIntoView({behavior:'smooth'})">Записаться сейчас</button>
-        <button class="btn-secondary" onclick="document.getElementById('gallery').scrollIntoView({behavior:'smooth'})">Посмотреть работы</button>
-      </div>
-    </div>
+  <div id="canvas-wrapper">
+    <canvas id="main-canvas"></canvas>
+    <div class="canvas-overlay"></div>
+    <div id="cursor-ring"></div>
+    <div id="flash"></div>
 
-    <div class="hero-photo-col">
-      <div id="canvas-wrapper">
-        <canvas id="main-canvas"></canvas>
-        <div class="canvas-overlay"></div>
-        <div id="cursor-ring"></div>
-        <div id="flash"></div>
-
-        <div class="style-label" id="style-label">CREW CUT</div>
-        <div class="photo-counter" id="photo-counter">1 / 3</div>
-        <div class="canvas-hint" id="canvas-hint">✦ Проведи мышкой по волосам и бороде</div>
-        <div class="progress-row" id="progress-row">
-          <div class="pdot" id="p0"></div>
-          <div class="pdot" id="p1"></div>
-          <div class="pdot" id="p2"></div>
-          <div class="pdot" id="p3"></div>
-          <div class="pdot" id="p4"></div>
-          <div class="pdot" id="p5"></div>
-        </div>
-      </div>
+    <div class="style-label" id="style-label">CREW CUT</div>
+    <div class="photo-counter" id="photo-counter">1 / 3</div>
+    <div class="canvas-hint" id="canvas-hint">Проведи мышкой по волосам и бороде</div>
+    <div class="progress-row" id="progress-row">
+      <div class="pdot" id="p0"></div>
+      <div class="pdot" id="p1"></div>
+      <div class="pdot" id="p2"></div>
+      <div class="pdot" id="p3"></div>
+      <div class="pdot" id="p4"></div>
+      <div class="pdot" id="p5"></div>
     </div>
   </div>
+
+  <div class="hero-side-right">
+    <div class="offer-content" id="offer-content">
+      <div class="offer-badge" id="offer-badge">АКЦИЯ НЕДЕЛИ</div>
+      <h1 class="offer-headline">
+        <span class="offer-line1" id="offer-line1">ПЕРВАЯ</span>
+        <span class="offer-line2 font-marker" id="offer-line2" style="color:#c9a961">СКИДКА 20%</span>
+      </h1>
+      <p class="offer-sub" id="offer-sub">На первое посещение. Успей записаться!</p>
+    </div>
+  </div>
+
+  <div class="hero-side-left">
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="document.getElementById('contacts').scrollIntoView({behavior:'smooth'})">Записаться сейчас</button>
+      <button class="btn-secondary" onclick="document.getElementById('gallery').scrollIntoView({behavior:'smooth'})">Посмотреть работы</button>
+    </div>
+  </div>
+
   <div class="scroll-indicator">Scroll</div>
 </div>
 
@@ -497,8 +510,8 @@ const STYLE_NAMES = ['CREW CUT', 'BALD FADE', 'CURLY TOP'];
 // Marketing offer text per photo -- varying wow styles, crossfades with each transition
 const OFFERS = [
   { badge: 'АКЦИЯ НЕДЕЛИ',      line1: 'ПЕРВАЯ',    line2: 'СКИДКА 20%', sub: 'На первое посещение. Успей записаться!',            color: '#c9a961', font: 'font-marker'  },
-  { badge: 'ГАРАНТИЯ КАЧЕСТВА', line1: 'ИДЕАЛЬНЫЙ', line2: 'ФЕЙД',       sub: 'Не понравится -- подстрижём заново бесплатно',       color: '#e5484d', font: 'font-bangers' },
-  { badge: 'ПОДАРОК КЛИЕНТУ',   line1: 'УКЛАДКА',   line2: 'В ПОДАРОК',  sub: 'При любой стрижке -- бесплатная укладка в комплекте', color: '#4fd1ff', font: 'font-caveat'  },
+  { badge: 'ГАРАНТИЯ КАЧЕСТВА', line1: 'ИДЕАЛЬНЫЙ', line2: 'ФЕЙД',       sub: 'Не понравится — подстрижём заново бесплатно',       color: '#e5484d', font: 'font-bangers' },
+  { badge: 'ПОДАРОК КЛИЕНТУ',   line1: 'УКЛАДКА',   line2: 'В ПОДАРОК',  sub: 'При любой стрижке — бесплатная укладка в комплекте', color: '#4fd1ff', font: 'font-caveat'  },
 ];
 
 function applyOffer(idx) {
@@ -546,8 +559,12 @@ let paintedPixels = 0; // rough count updated on stroke
 const ZONE = { x: 0.14, y: 0.0, w: 0.72, h: 0.82 };
 
 function resize() {
+  // Full-bleed hero: canvas now fills whatever box the browser gives it
+  // (can be any aspect ratio), so we take the real rendered size instead
+  // of forcing 16:9, and rely on drawCover() below to crop photos without
+  // distorting them.
   W = mainCanvas.offsetWidth;
-  H = Math.round(W * 9 / 16);
+  H = mainCanvas.offsetHeight;
   mainCanvas.width  = W;
   mainCanvas.height = H;
   tempCanvas.width  = W;
@@ -555,6 +572,18 @@ function resize() {
   maskCanvas.width  = W;
   maskCanvas.height = H;
   if (allLoaded) render();
+}
+
+// Draw `img` into `ctx` covering the full W x H box (crop, never stretch) --
+// the canvas2d equivalent of CSS `object-fit: cover; object-position: center`.
+function drawCover(ctx, img, W, H) {
+  const iw = img.naturalWidth || img.width;
+  const ih = img.naturalHeight || img.height;
+  const ir = iw / ih, cr = W / H;
+  let sx, sy, sw, sh;
+  if (ir > cr) { sh = ih; sw = ih * cr; sx = (iw - sw) / 2; sy = 0; }
+  else { sw = iw; sh = iw / cr; sx = 0; sy = (ih - sh) / 2; }
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
 }
 
 window.addEventListener('resize', resize);
@@ -611,9 +640,9 @@ function render() {
   const curr = loadedImages[currentIdx];
   const next = loadedImages[(currentIdx + 1) % loadedImages.length];
 
-  // Step 1: draw current image into tempCanvas
+  // Step 1: draw current image into tempCanvas (cropped to fill, not stretched)
   tempCtx.clearRect(0, 0, W, H);
-  tempCtx.drawImage(curr, 0, 0, W, H);
+  drawCover(tempCtx, curr, W, H);
 
   // Step 2: erase painted areas (destination-out with mask)
   tempCtx.globalCompositeOperation = 'destination-out';
@@ -622,7 +651,7 @@ function render() {
 
   // Step 3: draw to main canvas — next image behind, temp on top
   mainCtx.clearRect(0, 0, W, H);
-  mainCtx.drawImage(next, 0, 0, W, H);
+  drawCover(mainCtx, next, W, H);
   mainCtx.drawImage(tempCanvas, 0, 0, W, H);
 
   // Step 4: subtle vignette
