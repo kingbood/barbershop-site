@@ -336,19 +336,56 @@
   }
   .price-note { margin-top: 22px; font-size: 13px; color: var(--gray-text); font-style: italic; }
 
-  /* REVIEWS */
-  #reviews { overflow: hidden; }
-  .reviews-track-wrapper { overflow: hidden; margin: 0 -40px; padding: 0 40px; }
-  .reviews-track { display: flex; gap: 24px; animation: scroll-reviews 30s linear infinite; width: max-content; }
-  .reviews-track:hover { animation-play-state: paused; }
-  @keyframes scroll-reviews { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-  .review-card { min-width: 340px; background: var(--gray); border: 1px solid rgba(255,255,255,0.06); padding: 32px; flex-shrink: 0; }
-  .review-stars { color: var(--gold); font-size: 16px; margin-bottom: 16px; letter-spacing: 2px; }
-  .review-text { color: rgba(255,255,255,0.8); font-size: 15px; line-height: 1.7; margin-bottom: 20px; font-style: italic; }
-  .review-author { display: flex; align-items: center; gap: 12px; }
-  .review-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--black)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; color: var(--black); }
+  /* REVIEWS -- "Liquid Glass" cards: frosted translucent panels with a
+     soft specular sheen and a hairline gold rim, floating over blurred
+     warm light blobs so the glass has something to visibly refract. */
+  #reviews { position: relative; overflow: hidden; }
+  #reviews::before, #reviews::after {
+    content: ''; position: absolute; border-radius: 50%; filter: blur(90px);
+    pointer-events: none; z-index: 0;
+  }
+  #reviews::before { width: 420px; height: 420px; background: radial-gradient(circle, rgba(201,169,97,0.28), transparent 70%); top: -120px; left: 2%; }
+  #reviews::after  { width: 380px; height: 380px; background: radial-gradient(circle, rgba(201,169,97,0.16), transparent 70%); bottom: -100px; right: 5%; }
+
+  .reviews-grid { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+
+  .review-card {
+    position: relative; overflow: hidden; border-radius: 20px; padding: 32px 28px;
+    background: linear-gradient(155deg, rgba(255,255,255,0.09), rgba(255,255,255,0.02) 65%);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid rgba(201,169,97,0.22);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12);
+    transition: transform 0.4s cubic-bezier(0.23,1,0.32,1), box-shadow 0.4s cubic-bezier(0.23,1,0.32,1), border-color 0.4s ease;
+  }
+  .review-card::before {
+    /* specular sheen, top-left glass highlight */
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(135deg, rgba(255,255,255,0.14) 0%, transparent 38%);
+  }
+  .review-card::after {
+    /* hairline gold rim light along the top edge */
+    content: ''; position: absolute; top: 0; left: 14%; right: 14%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(232,201,122,0.75), transparent);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .review-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(201,169,97,0.4);
+      box-shadow: 0 28px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.16);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) { .review-card:hover { transform: none; } }
+
+  .review-stars { position: relative; z-index: 1; color: var(--gold); font-size: 16px; margin-bottom: 16px; letter-spacing: 2px; }
+  .review-text { position: relative; z-index: 1; color: rgba(255,255,255,0.85); font-size: 15px; line-height: 1.7; margin-bottom: 20px; font-style: italic; }
+  .review-author { position: relative; z-index: 1; display: flex; align-items: center; gap: 12px; }
+  .review-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--black)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; color: var(--black); flex-shrink: 0; }
   .review-name { font-weight: 600; font-size: 14px; }
   .review-date { color: var(--gray-text); font-size: 12px; margin-top: 2px; }
+
+  @media (max-width: 1100px) { .reviews-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 640px) { .reviews-grid { grid-template-columns: 1fr; } }
 
   /* CONTACTS */
   #contacts { background: var(--black); border-top: 1px solid rgba(201,169,97,0.2); }
@@ -639,9 +676,7 @@
   <div class="section-label">Отзывы</div>
   <h2 class="section-title">Что говорят<br>клиенты</h2>
   <div class="section-divider"></div>
-  <div class="reviews-track-wrapper">
-    <div class="reviews-track" id="reviews-track"></div>
-  </div>
+  <div class="reviews-grid" id="reviews-grid"></div>
 </section>
 
 <!-- CONTACTS -->
@@ -688,21 +723,18 @@
 <script>
 // ─── REVIEWS ──────────────────────────────────────────────────────────────────
 const reviewsData = [
-  { name: "Александр М.", date: "Октябрь 2024", text: "Лучший барбершоп в Краснодаре! Мастер Дима сделал идеальный фейд — ровно так, как я хотел. Уже 2 года хожу только сюда.", stars: 5 },
+  { name: "Александр М.", date: "Октябрь 2024",  text: "Лучший барбершоп в Краснодаре! Мастер Дима сделал идеальный фейд — ровно так, как я хотел. Уже 2 года хожу только сюда.", stars: 5 },
   { name: "Никита Р.",    date: "Сентябрь 2024", text: "Записался онлайн за 5 минут, пришёл без очереди. Атмосфера клёвая, музыка правильная, виски предложили. Однозначно рекомендую!", stars: 5 },
   { name: "Дмитрий К.",   date: "Сентябрь 2024", text: "Делал помпадур первый раз — боялся результата. Мастер объяснил всё про уход, показал укладку. Жена в восторге!", stars: 5 },
-  { name: "Сергей П.",    date: "Август 2024",   text: "Цена-качество на высшем уровне. За 1500 рублей получил стрижку как из журнала. Буду возвращаться снова.", stars: 5 },
-  { name: "Максим Л.",    date: "Август 2024",   text: "Первый раз слышал про этот барбершоп от друга. Теперь понимаю зачем он так хвалил. Место действительно топ.", stars: 5 },
-  { name: "Артём В.",     date: "Июль 2024",     text: "Сделали андеркат идеально. Мастер очень внимательный, учёл все пожелания. Интерьер современный, всё чисто.", stars: 4 },
   { name: "Иван С.",      date: "Июль 2024",     text: "Хожу уже год. Каждый раз уходишь довольным. Коллектив дружелюбный, профессиональный. Советую всем мужчинам города!", stars: 5 },
 ];
 (function buildReviews() {
-  const track = document.getElementById('reviews-track');
-  [...reviewsData, ...reviewsData].forEach(r => {
+  const grid = document.getElementById('reviews-grid');
+  reviewsData.forEach(r => {
     const el = document.createElement('div');
     el.className = 'review-card';
     el.innerHTML = `<div class="review-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div><p class="review-text">"${r.text}"</p><div class="review-author"><div class="review-avatar">${r.name[0]}</div><div><div class="review-name">${r.name}</div><div class="review-date">${r.date}</div></div></div>`;
-    track.appendChild(el);
+    grid.appendChild(el);
   });
 })();
 
@@ -1127,7 +1159,7 @@ document.querySelectorAll('.section-label, .section-title, .section-divider, .pr
   obs.observe(el);
 });
 
-document.querySelectorAll('.adv-card, .gallery-card, .contact-item, .stat-item').forEach((el, i) => {
+document.querySelectorAll('.adv-card, .gallery-card, .contact-item, .stat-item, .review-card').forEach((el, i) => {
   el.style.opacity = '0';
   el.style.transform = `translateY(${cardOffsetY}px)`;
   const delay = prefersReducedMotion ? 0 : (i % 6) * 0.06;
