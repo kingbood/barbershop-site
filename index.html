@@ -209,14 +209,80 @@
   /* ADVANTAGES */
   #advantages { background: var(--gray); margin: 0; max-width: 100%; padding: 100px 40px; }
   #advantages .inner { max-width: 1400px; margin: 0 auto; }
-  .adv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px; }
-  .adv-card { padding: 40px 32px; border: 1px solid rgba(255,255,255,0.06); position: relative; overflow: hidden; }
-  .adv-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--gold); transform: scaleX(0); transition: transform 0.4s; transform-origin: left; }
+
+  .stat-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 72px;
+  }
+  .stat-item { padding: 32px 16px; text-align: center; border-left: 1px solid rgba(255,255,255,0.1); }
+  .stat-item:first-child { border-left: none; }
+  .stat-number { font-family: 'Playfair Display', serif; font-weight: 900; font-size: clamp(30px, 4vw, 46px); color: var(--gold); line-height: 1; margin-bottom: 8px; }
+  .stat-label { font-size: 11.5px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray-text); }
+
+  .adv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: rgba(255,255,255,0.08); }
+  .adv-card {
+    background: var(--gray); padding: 48px 36px; position: relative; overflow: hidden;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+  .adv-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    transform: scaleX(0); transition: transform 0.45s cubic-bezier(0.23, 1, 0.32, 1); transform-origin: left;
+  }
   .adv-card:hover::before { transform: scaleX(1); }
-  .adv-number { font-family: 'Playfair Display', serif; font-size: 72px; color: rgba(201,169,97,0.1); font-weight: 900; line-height: 1; margin-bottom: 16px; }
-  .adv-icon { font-size: 36px; margin-bottom: 20px; }
-  .adv-title { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; margin-bottom: 12px; }
-  .adv-text { color: var(--gray-text); font-size: 15px; line-height: 1.7; }
+  @media (hover: hover) and (pointer: fine) {
+    .adv-card:hover { background: #303030; transform: translateY(-4px); }
+    .adv-card:hover .adv-icon-wrap { border-color: var(--gold); transform: scale(1.08) rotate(-4deg); }
+  }
+  .adv-icon-wrap {
+    width: 60px; height: 60px; border-radius: 50%; border: 1.5px solid rgba(201,169,97,0.4);
+    display: flex; align-items: center; justify-content: center; margin-bottom: 26px;
+    transition: border-color 0.3s ease, transform 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .adv-icon-wrap svg { width: 26px; height: 26px; stroke: var(--gold); fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .adv-title { font-family: 'Playfair Display', serif; font-size: 25px; font-weight: 700; margin-bottom: 18px; }
+  .adv-list { list-style: none; display: flex; flex-direction: column; gap: 11px; }
+  .adv-list li { color: rgba(255,255,255,0.72); font-size: 14.5px; line-height: 1.55; padding-left: 22px; position: relative; }
+  .adv-list li::before { content: ''; position: absolute; left: 0; top: 9px; width: 11px; height: 1.5px; background: var(--gold); }
+
+  @media (max-width: 640px) {
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+    .stat-item:nth-child(3) { border-left: none; }
+    .stat-item:nth-child(3), .stat-item:nth-child(4) { border-top: 1px solid rgba(255,255,255,0.1); }
+  }
+
+  /* PRICES */
+  .price-table-wrap { overflow-x: auto; border: 1px solid rgba(255,255,255,0.1); }
+  .price-table { width: 100%; border-collapse: collapse; min-width: 580px; }
+  .price-table thead th {
+    text-align: left; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--gold); padding: 18px 28px; border-bottom: 1px solid rgba(201,169,97,0.3); font-weight: 600;
+  }
+  .price-table thead th:nth-child(2), .price-table td:nth-child(2) { text-align: center; width: 110px; }
+  .price-table thead th:last-child, .price-table td:last-child { text-align: right; }
+  .price-table tbody tr:not(.price-group) {
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    transition: background-color 0.2s ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .price-table tbody tr:not(.price-group):hover { background: rgba(201,169,97,0.06); }
+  }
+  .price-table td { padding: 18px 28px; font-size: 15px; color: rgba(255,255,255,0.88); }
+  .price-table tr.price-group td {
+    padding: 30px 28px 12px; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;
+    color: var(--white); border-bottom: none;
+  }
+  .price-table tr.price-group:first-child td { padding-top: 6px; }
+  .price-table tr.price-popular td:first-child { color: var(--gold); font-weight: 600; }
+  .price-table td:nth-child(2) { color: var(--gray-text); font-size: 13.5px; }
+  .price-table td:last-child { font-weight: 700; color: var(--gold); white-space: nowrap; }
+  .price-badge {
+    display: inline-block; background: var(--gold); color: var(--black);
+    font-size: 9.5px; letter-spacing: 1px; text-transform: uppercase;
+    padding: 3px 8px; margin-left: 10px; font-weight: 700; vertical-align: middle;
+  }
+  .price-note { margin-top: 22px; font-size: 13px; color: var(--gray-text); font-style: italic; }
 
   /* REVIEWS */
   #reviews { overflow: hidden; }
@@ -296,6 +362,7 @@
   <ul class="nav-links">
     <li><a href="#gallery">Услуги</a></li>
     <li><a href="#advantages">О нас</a></li>
+    <li><a href="#prices">Цены</a></li>
     <li><a href="#reviews">Отзывы</a></li>
     <li><a href="#contacts">Контакты</a></li>
   </ul>
@@ -393,30 +460,91 @@
 <div id="advantages">
   <div class="inner">
     <div class="section-label">Почему мы</div>
-    <h2 class="section-title">Три причины<br>выбрать Base.Cut</h2>
+    <h2 class="section-title">Причины доверить<br>голову нам</h2>
     <div class="section-divider"></div>
+
+    <div class="stat-row">
+      <div class="stat-item"><div class="stat-number">8 лет</div><div class="stat-label">На рынке Краснодара</div></div>
+      <div class="stat-item"><div class="stat-number">15 000+</div><div class="stat-label">Довольных клиентов</div></div>
+      <div class="stat-item"><div class="stat-number">4.9</div><div class="stat-label">Средний рейтинг ★</div></div>
+      <div class="stat-item"><div class="stat-number">12</div><div class="stat-label">Мастеров в команде</div></div>
+    </div>
+
     <div class="adv-grid">
       <div class="adv-card">
-        <div class="adv-number">01</div>
-        <div class="adv-icon">✂️</div>
-        <h3 class="adv-title">Мастера</h3>
-        <p class="adv-text">Каждый барбер проходит обучение в лучших академиях Европы. Минимум 5 лет опыта, постоянное совершенствование техник.</p>
+        <div class="adv-icon-wrap">
+          <svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
+        </div>
+        <h3 class="adv-title">Мастера с опытом</h3>
+        <ul class="adv-list">
+          <li>Минимум 5 лет практики у каждого барбера</li>
+          <li>Регулярное обучение в барбер-академиях России и Европы</li>
+          <li>Портфолио и стиль каждого мастера — на сайте</li>
+        </ul>
       </div>
       <div class="adv-card">
-        <div class="adv-number">02</div>
-        <div class="adv-icon">💎</div>
-        <h3 class="adv-title">Качество</h3>
-        <p class="adv-text">Только профессиональные инструменты Wahl и Andis. Стерильность, точность, внимание к каждой детали вашего образа.</p>
+        <div class="adv-icon-wrap">
+          <svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.25 3.75 9.74 9 11 5.25-1.26 9-5.75 9-11V6l-9-4Z"/><path d="m9 12 2 2 4-4"/></svg>
+        </div>
+        <h3 class="adv-title">Премиум-инструменты</h3>
+        <ul class="adv-list">
+          <li>Wahl, Andis, Jaguar — только профессиональная техника</li>
+          <li>Стерилизация инструментов после каждого клиента</li>
+          <li>Премиальная косметика для волос и бороды</li>
+        </ul>
       </div>
       <div class="adv-card">
-        <div class="adv-number">03</div>
-        <div class="adv-icon">🎯</div>
-        <h3 class="adv-title">Стиль</h3>
-        <p class="adv-text">Мы не просто стрижём — мы создаём образ. Индивидуальный подход, консультация по типу лица, рекомендации по укладке.</p>
+        <div class="adv-icon-wrap">
+          <svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><path d="M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/></svg>
+        </div>
+        <h3 class="adv-title">Индивидуальный подход</h3>
+        <ul class="adv-list">
+          <li>Бесплатная консультация перед стрижкой</li>
+          <li>Подбор формы под тип лица и структуру волос</li>
+          <li>Рекомендации по уходу и укладке дома</li>
+        </ul>
       </div>
     </div>
   </div>
 </div>
+
+<!-- PRICES -->
+<section id="prices">
+  <div class="section-label">Прайс-лист</div>
+  <h2 class="section-title">Услуги<br>и цены</h2>
+  <div class="section-divider"></div>
+
+  <div class="price-table-wrap">
+    <table class="price-table">
+      <thead>
+        <tr><th scope="col">Услуга</th><th scope="col">Время</th><th scope="col">Цена</th></tr>
+      </thead>
+      <tbody>
+        <tr class="price-group"><td colspan="3">Стрижки</td></tr>
+        <tr><td>Классическая стрижка</td><td>40 мин</td><td>от 1 200 ₽</td></tr>
+        <tr><td>Стрижка машинкой</td><td>20 мин</td><td>от 700 ₽</td></tr>
+        <tr><td>Стрижка + мытьё головы</td><td>45 мин</td><td>от 1 400 ₽</td></tr>
+        <tr><td>Детская стрижка (до 12 лет)</td><td>30 мин</td><td>от 800 ₽</td></tr>
+
+        <tr class="price-group"><td colspan="3">Борода и бритьё</td></tr>
+        <tr><td>Оформление бороды</td><td>20 мин</td><td>от 600 ₽</td></tr>
+        <tr><td>Королевское бритьё опасной бритвой</td><td>35 мин</td><td>от 900 ₽</td></tr>
+        <tr class="price-popular"><td>Стрижка + борода<span class="price-badge">Хит</span></td><td>60 мин</td><td>от 1 800 ₽</td></tr>
+
+        <tr class="price-group"><td colspan="3">Окрашивание и уход</td></tr>
+        <tr><td>Камуфляж седины</td><td>30 мин</td><td>от 1 200 ₽</td></tr>
+        <tr><td>Тонирование волос</td><td>40 мин</td><td>от 1 500 ₽</td></tr>
+        <tr><td>Укладка</td><td>15 мин</td><td>от 400 ₽</td></tr>
+        <tr><td>Экспресс-уход за лицом</td><td>25 мин</td><td>от 700 ₽</td></tr>
+
+        <tr class="price-group"><td colspan="3">Комплексы</td></tr>
+        <tr class="price-popular"><td>Стрижка + борода + бритьё<span class="price-badge">Выгодно</span></td><td>90 мин</td><td>от 2 500 ₽</td></tr>
+        <tr><td>День красоты (стрижка + борода + уход + укладка)</td><td>120 мин</td><td>от 3 200 ₽</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="price-note">Точная стоимость зависит от длины волос и сложности работы. Финальную цену мастер озвучит на бесплатной консультации.</p>
+</section>
 
 <!-- REVIEWS -->
 <section id="reviews">
@@ -864,14 +992,14 @@ const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)
 const revealOffsetY = prefersReducedMotion ? 0 : 18;
 const cardOffsetY = prefersReducedMotion ? 0 : 30;
 
-document.querySelectorAll('.section-label, .section-title, .section-divider').forEach(el => {
+document.querySelectorAll('.section-label, .section-title, .section-divider, .price-table-wrap, .price-note').forEach(el => {
   el.style.opacity = '0';
   el.style.transform = `translateY(${revealOffsetY}px)`;
   el.style.transition = `opacity 0.6s ${EASE_OUT}, transform 0.6s ${EASE_OUT}`;
   obs.observe(el);
 });
 
-document.querySelectorAll('.adv-card, .gallery-card, .contact-item').forEach((el, i) => {
+document.querySelectorAll('.adv-card, .gallery-card, .contact-item, .stat-item').forEach((el, i) => {
   el.style.opacity = '0';
   el.style.transform = `translateY(${cardOffsetY}px)`;
   const delay = prefersReducedMotion ? 0 : (i % 6) * 0.06;
