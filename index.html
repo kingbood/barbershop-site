@@ -31,8 +31,33 @@
   .nav-links { display: flex; gap: 32px; list-style: none; }
   .nav-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; transition: color 0.3s; }
   .nav-links a:hover { color: var(--gold); }
+  .nav-right { display: flex; align-items: center; gap: 16px; }
   .nav-cta { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 10px 24px; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: background-color 0.2s ease, color 0.2s ease; font-family: 'Inter', sans-serif; }
   @media (hover: hover) and (pointer: fine) { .nav-cta:hover { background: var(--gold); color: var(--black); } }
+
+  .nav-burger {
+    display: none; flex-direction: column; justify-content: center; gap: 5px;
+    width: 32px; height: 32px; background: none; border: none; cursor: pointer; padding: 0; flex-shrink: 0;
+  }
+  .nav-burger span { display: block; width: 100%; height: 2px; background: var(--gold); transition: transform 0.3s cubic-bezier(0.23,1,0.32,1), opacity 0.2s ease; }
+  .nav-burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .nav-burger.open span:nth-child(2) { opacity: 0; }
+  .nav-burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  .nav-scrim {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 140;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+  }
+  .nav-scrim.open { opacity: 1; pointer-events: auto; }
+  @media (prefers-reduced-motion: reduce) {
+    .nav-links {
+      transform: none; opacity: 0; visibility: hidden;
+      transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+    }
+    .nav-links.open { opacity: 1; visibility: visible; transition: opacity 0.2s ease; }
+    .nav-burger span { transition: opacity 0.2s ease; }
+    .nav-burger.open span:nth-child(1), .nav-burger.open span:nth-child(3) { transform: none; }
+  }
 
   /* HERO -- full-bleed interactive photo fills the whole first screen, no
      card/frame around it. Offer text floats on the right of the subject,
@@ -326,7 +351,16 @@
   /* MOBILE */
   @media (max-width: 768px) {
     nav { padding: 16px 20px; }
-    .nav-links { display: none; }
+    .nav-burger { display: flex; }
+    .nav-links {
+      position: fixed; top: 0; right: 0; height: 100vh; width: min(78vw, 320px);
+      flex-direction: column; justify-content: center; align-items: flex-start; gap: 26px;
+      background: #141414; padding: 40px; margin: 0; z-index: 150;
+      box-shadow: -24px 0 60px rgba(0,0,0,0.5);
+      transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+    .nav-links.open { transform: translateX(0); }
+    .nav-links a { font-size: 15px; letter-spacing: 2px; }
     section { padding: 60px 20px; }
     #advantages { padding: 60px 20px; }
     .adv-grid { grid-template-columns: 1fr; gap: 24px; }
@@ -337,6 +371,27 @@
     #canvas-wrapper { cursor: crosshair; }
     #cursor-ring { display: none; }
     .scroll-indicator { display: none; }
+
+    /* Price table -> stacked rows instead of a horizontally-scrolling table.
+       A 3-column table has no good narrow layout, and a scroll hint is easy
+       to miss, so each service becomes a name+price line with the duration
+       dropped to a small subtitle underneath. */
+    .price-table-wrap { overflow-x: visible; border: none; }
+    .price-table { min-width: 0; }
+    .price-table thead { display: none; }
+    .price-table, .price-table tbody, .price-table tr, .price-table td { display: block; width: 100%; }
+    .price-table tr.price-group td { padding: 26px 4px 10px; }
+    .price-table tr.price-group:first-child td { padding-top: 0; }
+    .price-table tr:not(.price-group) {
+      display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
+      padding: 14px 4px; border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .price-table tr:not(.price-group) td { padding: 0; width: auto; }
+    .price-table tr:not(.price-group) td:first-child { flex: 1 1 auto; padding-right: 12px; }
+    .price-table tr:not(.price-group) td:nth-child(2) {
+      order: 3; flex-basis: 100%; text-align: left; margin-top: 4px;
+    }
+    .price-table tr:not(.price-group) td:last-child { text-align: right; }
   }
   @media (max-width: 480px) { .gallery-grid { grid-template-columns: 1fr; } }
 
@@ -359,15 +414,21 @@
 
 <nav>
   <a href="#hero" class="logo">Base<span>.</span>Cut</a>
-  <ul class="nav-links">
+  <ul class="nav-links" id="nav-links">
     <li><a href="#gallery">Услуги</a></li>
     <li><a href="#advantages">О нас</a></li>
     <li><a href="#prices">Цены</a></li>
     <li><a href="#reviews">Отзывы</a></li>
     <li><a href="#contacts">Контакты</a></li>
   </ul>
-  <button class="nav-cta" onclick="document.getElementById('contacts').scrollIntoView({behavior:'smooth'})">Записаться</button>
+  <div class="nav-right">
+    <button class="nav-cta" onclick="document.getElementById('contacts').scrollIntoView({behavior:'smooth'})">Записаться</button>
+    <button class="nav-burger" id="nav-burger" aria-label="Меню" aria-expanded="false" aria-controls="nav-links">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
 </nav>
+<div class="nav-scrim" id="nav-scrim"></div>
 
 <div id="hero">
   <div id="canvas-wrapper">
@@ -1006,6 +1067,25 @@ document.querySelectorAll('.adv-card, .gallery-card, .contact-item, .stat-item')
   el.style.transition = `opacity 0.6s ${EASE_OUT} ${delay}s, transform 0.6s ${EASE_OUT} ${delay}s`;
   obs.observe(el);
 });
+
+// ── Mobile nav menu (hamburger)
+const navBurger = document.getElementById('nav-burger');
+const navLinksEl = document.getElementById('nav-links');
+const navScrim = document.getElementById('nav-scrim');
+
+function setNavOpen(isOpen) {
+  navBurger.classList.toggle('open', isOpen);
+  navLinksEl.classList.toggle('open', isOpen);
+  navScrim.classList.toggle('open', isOpen);
+  navBurger.setAttribute('aria-expanded', String(isOpen));
+  document.body.style.overflow = isOpen ? 'hidden' : '';
+}
+
+if (navBurger) {
+  navBurger.addEventListener('click', () => setNavOpen(!navLinksEl.classList.contains('open')));
+  navScrim.addEventListener('click', () => setNavOpen(false));
+  navLinksEl.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setNavOpen(false)));
+}
 
 // ── Start
 loadImages();
