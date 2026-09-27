@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Мицура — Премиум Барбершоп</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&family=Permanent+Marker&family=Bangers&family=Caveat:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&family=Permanent+Marker&family=Bangers&family=Caveat:wght@700&family=Yeseva+One&display=swap" rel="stylesheet">
 <style>
   :root {
     --black: #1a1a1a;
@@ -19,14 +19,23 @@
   body { background: var(--black); color: var(--white); font-family: 'Inter', sans-serif; overflow-x: hidden; }
   h1, h2, h3 { font-family: 'Playfair Display', serif; }
 
-  /* NAV */
+  /* NAV -- pointer-events:none lets mouse movement over the empty gradient
+     area pass through to the hero canvas underneath (same fix as the
+     side text panels), so painting works right up to the very top of the
+     hair instead of stopping under the nav bar. Only the actual
+     logo/links/buttons opt back in below. */
   nav {
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     display: flex; align-items: center; justify-content: space-between;
     padding: 20px 40px;
     background: linear-gradient(to bottom, rgba(26,26,26,0.95), transparent);
+    pointer-events: none;
   }
-  .logo { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; color: var(--gold); letter-spacing: 2px; text-decoration: none; }
+  /* Re-enable pointer-events on the actual clickable elements only -- not
+     on .nav-links itself, whose flex gaps would otherwise stay a dead zone
+     for painting right where hair often sits at the very top of the frame. */
+  .logo, .nav-links a, .nav-cta, .nav-burger { pointer-events: auto; }
+  .logo { font-family: 'Yeseva One', 'Playfair Display', serif; font-size: 26px; font-weight: 400; color: var(--gold); letter-spacing: 1px; text-decoration: none; }
   .logo span { color: var(--white); }
   .nav-links { display: flex; gap: 32px; list-style: none; }
   .nav-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; transition: color 0.3s; }
@@ -343,7 +352,7 @@
 
   /* LOADING */
   #loading-screen { position: fixed; inset: 0; background: var(--black); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.8s; }
-  .load-logo { font-family: 'Playfair Display', serif; font-size: 48px; font-weight: 900; color: var(--gold); margin-bottom: 32px; letter-spacing: 4px; }
+  .load-logo { font-family: 'Yeseva One', 'Playfair Display', serif; font-size: 44px; font-weight: 400; color: var(--gold); margin-bottom: 32px; letter-spacing: 2px; }
   .load-bar { width: 200px; height: 1px; background: rgba(255,255,255,0.1); overflow: hidden; }
   .load-fill { height: 100%; background: var(--gold); width: 0; transition: width 1.5s ease; }
   .load-text { color: var(--gray-text); font-size: 12px; letter-spacing: 3px; text-transform: uppercase; margin-top: 16px; }
@@ -713,7 +722,7 @@ function applyOffer(idx) {
   }
   if (subEl) subEl.textContent = o.sub;
 }
-const BRUSH_RADIUS = 42;   // canvas pixels (before scale) -- sized for the narrower profile-shot paint zone
+const BRUSH_RADIUS = 48;   // canvas pixels (before scale) -- bumped to match the taller/wider paint zone
 const PAINT_THRESHOLD = 0.72; // 72% of hair zone painted → next photo
 
 const wrapper   = document.getElementById('canvas-wrapper');
@@ -741,7 +750,7 @@ let paintedPixels = 0; // rough count updated on stroke
 // Paintable zone relative coordinates (0..1) -- these photos are profile
 // (side-view) shots with the head positioned right-of-center, so the zone
 // covers hair-through-beard in that region instead of a centered box.
-const ZONE = { x: 0.34, y: 0.0, w: 0.42, h: 0.72 };
+const ZONE = { x: 0.30, y: 0.0, w: 0.48, h: 0.85 };
 
 function resize() {
   // Full-bleed hero: canvas now fills whatever box the browser gives it
