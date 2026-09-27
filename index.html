@@ -23,9 +23,18 @@
      area pass through to the hero canvas underneath (same fix as the
      side text panels), so painting works right up to the very top of the
      hair instead of stopping under the nav bar. Only the actual
-     logo/links/buttons opt back in below. */
+     logo/links/buttons opt back in below.
+
+     z-index:160, above .nav-scrim's 140: <nav> establishes its own
+     stacking context, so a child's z-index (.nav-links at 150, .nav-burger
+     at 200) only ever competes with nav's OTHER children -- against an
+     element outside nav, like the scrim, it's nav's OWN z-index that's
+     compared. With nav below the scrim, opening the mobile menu made the
+     now-interactive scrim cover the whole nav bar and swallow every tap on
+     its links (and on the burger itself, to close it) -- the reported
+     "burger isn't clickable". */
   nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    position: fixed; top: 0; left: 0; right: 0; z-index: 160;
     display: flex; align-items: center; justify-content: space-between;
     padding: 20px 40px;
     background: linear-gradient(to bottom, rgba(26,26,26,0.95), transparent);
@@ -38,17 +47,18 @@
   .logo { font-family: 'Yeseva One', 'Playfair Display', serif; font-size: 26px; font-weight: 400; color: var(--gold); letter-spacing: 1px; text-decoration: none; }
   .logo span { color: var(--white); }
   .nav-links { display: flex; gap: 32px; list-style: none; }
-  .nav-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; transition: color 0.3s; }
+  .nav-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; transition: color 0.3s; touch-action: manipulation; }
   .nav-links a:hover { color: var(--gold); }
   .nav-right { display: flex; align-items: center; gap: 16px; }
   .nav-cta { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 10px 24px; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: background-color 0.2s ease, color 0.2s ease; font-family: 'Inter', sans-serif; }
   @media (hover: hover) and (pointer: fine) { .nav-cta:hover { background: var(--gold); color: var(--black); } }
 
   .nav-burger {
-    display: none; flex-direction: column; justify-content: center; gap: 5px;
-    width: 32px; height: 32px; background: none; border: none; cursor: pointer; padding: 0; flex-shrink: 0;
+    display: none; flex-direction: column; justify-content: center; align-items: center; gap: 5px;
+    width: 44px; height: 44px; background: none; border: none; cursor: pointer; padding: 0; flex-shrink: 0;
+    position: relative; z-index: 200; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   }
-  .nav-burger span { display: block; width: 100%; height: 2px; background: var(--gold); transition: transform 0.3s cubic-bezier(0.23,1,0.32,1), opacity 0.2s ease; }
+  .nav-burger span { display: block; width: 24px; height: 2px; background: var(--gold); transition: transform 0.3s cubic-bezier(0.23,1,0.32,1), opacity 0.2s ease; }
   .nav-burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
   .nav-burger.open span:nth-child(2) { opacity: 0; }
   .nav-burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
@@ -173,6 +183,14 @@
     pointer-events: none; white-space: nowrap; font-weight: 500;
     text-shadow: 0 2px 10px rgba(0,0,0,0.95);
     transition: opacity 0.6s ease;
+  }
+  /* Touch devices get "палец" (finger) instead of "мышка" (mouse) --
+     matched on input capability, not viewport width, so a touch tablet at
+     desktop width still gets the right wording. */
+  .canvas-hint .hint-touch { display: none; }
+  @media (hover: none) and (pointer: coarse) {
+    .canvas-hint .hint-mouse { display: none; }
+    .canvas-hint .hint-touch { display: inline; }
   }
   .style-label {
     position: absolute; top: 100px; left: 24px; z-index: 6;
@@ -448,7 +466,7 @@
 
     <div class="style-label" id="style-label">CURLY FADE</div>
     <div class="photo-counter" id="photo-counter">1 / 5</div>
-    <div class="canvas-hint" id="canvas-hint">Проведи мышкой по волосам и бороде</div>
+    <div class="canvas-hint" id="canvas-hint"><span class="hint-mouse">Проведи мышкой по волосам и бороде</span><span class="hint-touch">Проведи пальцем по волосам и бороде</span></div>
     <div class="progress-row" id="progress-row">
       <div class="pdot" id="p0"></div>
       <div class="pdot" id="p1"></div>
@@ -722,7 +740,10 @@ function applyOffer(idx) {
   }
   if (subEl) subEl.textContent = o.sub;
 }
-const BRUSH_RADIUS = 48;   // canvas pixels (before scale) -- bumped to match the taller/wider paint zone
+// Brush radius as a fraction of the paint zone's own on-screen diagonal --
+// see the note at its use in paint() for why this replaced a canvas-width-
+// relative constant. ~0.075 keeps the desktop feel from before this change.
+const BRUSH_RADIUS_RATIO = 0.075;
 const PAINT_THRESHOLD = 0.72; // 72% of hair zone painted → next photo
 
 const wrapper   = document.getElementById('canvas-wrapper');
@@ -747,10 +768,38 @@ let mouseX = 0, mouseY = 0;
 let hintFaded = false;
 let paintedPixels = 0; // rough count updated on stroke
 
-// Paintable zone relative coordinates (0..1) -- these photos are profile
-// (side-view) shots with the head positioned right-of-center, so the zone
-// covers hair-through-beard in that region instead of a centered box.
-const ZONE = { x: 0.30, y: 0.0, w: 0.48, h: 0.85 };
+// Paintable zone, expressed as fractions of the ORIGINAL photo (not the
+// canvas) -- these profile shots share one composition, hair-through-beard
+// sitting right-of-center. Kept in source-image space and mapped to the
+// canvas per-frame via getPaintZone() below, because drawCover() crops
+// differently depending on the canvas's aspect ratio: on a narrow phone
+// screen it zooms in much further than on a wide desktop hero, which was
+// shifting the actual hair/beard pixels outside a canvas-relative box that
+// only looked right at desktop proportions (the reported "can't paint the
+// nape" bug on mobile).
+const ZONE_SRC = { x: 0.30, y: 0.0, w: 0.48, h: 0.85 };
+
+// Map the crop rectangle drawCover() would use for an iw x ih image into a
+// W x H box -- shared by drawCover (pixels) and getPaintZone (fractions).
+function getCoverRect(iw, ih, W, H) {
+  const ir = iw / ih, cr = W / H;
+  if (ir > cr) { const sh = ih, sw = ih * cr; return { sx: (iw - sw) / 2, sy: 0, sw, sh }; }
+  const sw = iw, sh = iw / cr;
+  return { sx: 0, sy: (ih - sh) / 2, sw, sh };
+}
+
+// Convert ZONE_SRC (fractions of the source photo) into fractions of the
+// current canvas, given how the current photo is actually being cropped.
+function getPaintZone() {
+  const img = loadedImages[currentIdx];
+  if (!img) return ZONE_SRC;
+  const iw = img.naturalWidth || img.width;
+  const ih = img.naturalHeight || img.height;
+  const { sx, sy, sw, sh } = getCoverRect(iw, ih, W, H);
+  const srcX = ZONE_SRC.x * iw, srcY = ZONE_SRC.y * ih;
+  const srcW = ZONE_SRC.w * iw, srcH = ZONE_SRC.h * ih;
+  return { x: (srcX - sx) / sw, y: (srcY - sy) / sh, w: srcW / sw, h: srcH / sh };
+}
 
 function resize() {
   // Full-bleed hero: canvas now fills whatever box the browser gives it
@@ -773,10 +822,7 @@ function resize() {
 function drawCover(ctx, img, W, H) {
   const iw = img.naturalWidth || img.width;
   const ih = img.naturalHeight || img.height;
-  const ir = iw / ih, cr = W / H;
-  let sx, sy, sw, sh;
-  if (ir > cr) { sh = ih; sw = ih * cr; sx = (iw - sw) / 2; sy = 0; }
-  else { sw = iw; sh = iw / cr; sx = 0; sy = (ih - sh) / 2; }
+  const { sx, sy, sw, sh } = getCoverRect(iw, ih, W, H);
   ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
 }
 
@@ -867,7 +913,8 @@ function paint(canvasX, canvasY) {
 
   // Check if inside hair zone
   const rx = canvasX / W, ry = canvasY / H;
-  const inZone = rx >= ZONE.x && rx <= ZONE.x + ZONE.w && ry >= ZONE.y && ry <= ZONE.y + ZONE.h;
+  const zone = getPaintZone();
+  const inZone = rx >= zone.x && rx <= zone.x + zone.w && ry >= zone.y && ry <= zone.y + zone.h;
   if (!inZone) {
     cursorRing.classList.remove('in-zone');
     return;
@@ -881,8 +928,15 @@ function paint(canvasX, canvasY) {
     if (hint) hint.style.opacity = '0';
   }
 
-  // Soft brush on mask
-  const r = BRUSH_RADIUS * (W / 900); // scale with canvas
+  // Soft brush on mask -- sized relative to the zone's own on-screen
+  // diagonal (not just canvas width) so the brush-to-zone ratio stays
+  // constant no matter how aggressively drawCover crops on a given aspect
+  // ratio. A narrow phone screen crops in tight, which makes the mapped
+  // zone cover a much *larger* fraction of the canvas than on desktop --
+  // scaling only off W left the brush far too small to paint it in a
+  // reasonable number of strokes.
+  const zoneDiagPx = Math.hypot(zone.w * W, zone.h * H);
+  const r = BRUSH_RADIUS_RATIO * zoneDiagPx;
   const grad = maskCtx.createRadialGradient(canvasX, canvasY, 0, canvasX, canvasY, r);
   grad.addColorStop(0,   'rgba(255,255,255,1)');
   grad.addColorStop(0.5, 'rgba(255,255,255,0.95)');
@@ -902,10 +956,13 @@ function checkProgress() {
   if (now - lastSampleTime < 120) return; // throttle sampling
   lastSampleTime = now;
 
-  const zx = Math.floor(ZONE.x * W);
-  const zy = Math.floor(ZONE.y * H);
-  const zw = Math.floor(ZONE.w * W);
-  const zh = Math.floor(ZONE.h * H);
+  const zone = getPaintZone();
+  // Clamp to canvas bounds -- the mapped zone can slightly overshoot 0..1
+  // on aspect ratios far from the source photo's own ratio.
+  const zx = Math.max(0, Math.floor(zone.x * W));
+  const zy = Math.max(0, Math.floor(zone.y * H));
+  const zw = Math.min(W, Math.floor((zone.x + zone.w) * W)) - zx;
+  const zh = Math.min(H, Math.floor((zone.y + zone.h) * H)) - zy;
   if (zw <= 0 || zh <= 0) return;
 
   // Sample every 8th pixel (fast)
@@ -1012,7 +1069,8 @@ function updateCursor(e) {
   const ry = ((e.clientY - rect.top)  / rect.height);
   cursorRing.style.left = (e.clientX - rect.left) + 'px';
   cursorRing.style.top  = (e.clientY - rect.top)  + 'px';
-  const inZ = rx >= ZONE.x && rx <= ZONE.x + ZONE.w && ry >= ZONE.y && ry <= ZONE.y + ZONE.h;
+  const zone = getPaintZone();
+  const inZ = rx >= zone.x && rx <= zone.x + zone.w && ry >= zone.y && ry <= zone.y + zone.h;
   cursorRing.classList.toggle('in-zone', inZ);
 }
 
