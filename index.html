@@ -31,69 +31,79 @@
   .nav-links { display: flex; gap: 32px; list-style: none; }
   .nav-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; transition: color 0.3s; }
   .nav-links a:hover { color: var(--gold); }
-  .nav-cta { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 10px 24px; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.3s; font-family: 'Inter', sans-serif; }
-  .nav-cta:hover { background: var(--gold); color: var(--black); }
+  .nav-cta { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 10px 24px; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: background-color 0.2s ease, color 0.2s ease; font-family: 'Inter', sans-serif; }
+  @media (hover: hover) and (pointer: fine) { .nav-cta:hover { background: var(--gold); color: var(--black); } }
 
-  /* HERO */
-  #hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; padding-top: 80px; }
-  .hero-content { text-align: center; z-index: 2; padding: 20px; position: relative; width: 100%; max-width: 1100px; }
-  .hero-badge { display: inline-block; border: 1px solid var(--gold); color: var(--gold); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; padding: 6px 18px; margin-bottom: 20px; }
-  .hero-title { font-size: clamp(32px, 6vw, 88px); font-weight: 900; line-height: 1.05; letter-spacing: -1px; margin-bottom: 12px; }
-  .hero-title .gold { color: var(--gold); }
-  .hero-subtitle { font-size: clamp(13px, 1.8vw, 17px); color: var(--gray-text); letter-spacing: 1px; margin-bottom: 28px; font-weight: 300; }
+  /* HERO -- split layout: offer text on the left, interactive photo on the
+     right, overlapping slightly so the photo card reads as sitting in front
+     of the text (a side depth cue) without any pixel-level text-behind-face
+     compositing, which is what caused the transparency bugs. */
+  #hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; padding: 110px 40px 60px; }
+  .hero-grid {
+    width: 100%; max-width: 1400px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1.15fr; align-items: center; gap: 0;
+  }
+  .hero-text { position: relative; z-index: 1; padding-right: 24px; }
+  .hero-photo-col { position: relative; z-index: 2; margin-left: -70px; }
 
-  /* CANVAS AREA */
-  #canvas-wrapper {
-    width: 100%; max-width: 1000px; margin: 0 auto;
-    position: relative; cursor: none; aspect-ratio: 16/9;
-    border-radius: 2px; overflow: hidden;
-    box-shadow: 0 0 80px rgba(0,0,0,0.8);
-    background: #0a0a0a;
+  .hero-text, .hero-photo-col {
+    opacity: 0; transform: translateY(22px);
+    animation: heroIn 0.7s cubic-bezier(0.23, 1, 0.32, 1) forwards;
   }
-  #main-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 3; }
-  #text-overlay {
-    position: absolute; inset: 0; z-index: 1;
-    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-    padding-top: 1.5%; text-align: center; pointer-events: none;
-    transition: opacity 0.35s ease;
+  .hero-text { animation-delay: 0.1s; }
+  .hero-photo-col { animation-delay: 0.25s; }
+  @keyframes heroIn { to { opacity: 1; transform: translateY(0); } }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-text, .hero-photo-col { animation: heroInReduced 0.4s ease forwards; }
+    @keyframes heroInReduced { to { opacity: 1; } }
   }
-  #text-overlay.fading { opacity: 0; }
+
+  .offer-content { transition: opacity 0.3s ease; }
+  .offer-content.fading { opacity: 0; }
   .offer-badge {
-    font-family: 'Inter', sans-serif; font-size: clamp(9px,1.2vw,11px);
+    display: inline-block; font-family: 'Inter', sans-serif; font-size: 12px;
     letter-spacing: 3px; text-transform: uppercase; color: var(--gold);
-    background: rgba(0,0,0,0.5); border: 1px solid rgba(201,169,97,0.45);
-    padding: 5px 14px; margin-bottom: 4px;
+    border: 1px solid rgba(201,169,97,0.45); padding: 6px 16px; margin-bottom: 22px;
   }
+  .offer-headline { line-height: 0.95; margin-bottom: 20px; }
   .offer-line1 {
-    font-family: 'Playfair Display', serif; font-weight: 700;
-    font-size: clamp(13px, 2.2vw, 20px); color: #fff; line-height: 1;
-    letter-spacing: 1px; text-transform: uppercase;
-    text-shadow: 0 2px 14px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.95);
+    display: block; font-family: 'Playfair Display', serif; font-weight: 900;
+    font-size: clamp(22px, 2.8vw, 32px); color: #fff; letter-spacing: -0.5px;
   }
-  .offer-line2 {
-    font-size: clamp(38px, 8.5vw, 84px); line-height: 0.95; margin-top: 2px;
-    text-shadow: 0 3px 28px rgba(0,0,0,0.85), 0 1px 4px rgba(0,0,0,0.95);
-  }
-  .offer-sub {
-    position: absolute; bottom: 17%; left: 50%; transform: translateX(-50%);
-    font-family: 'Inter', sans-serif; font-weight: 600;
-    font-size: clamp(11px, 1.6vw, 14px); color: rgba(255,255,255,0.9);
-    max-width: 82%; letter-spacing: 0.3px;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.95), 0 0 3px rgba(0,0,0,1);
-  }
+  .offer-line2 { display: block; font-size: clamp(46px, 6vw, 88px); margin-top: 6px; }
+  .offer-sub { font-size: clamp(14px, 1.5vw, 17px); color: var(--gray-text); max-width: 440px; line-height: 1.6; margin-bottom: 32px; }
   .font-marker { font-family: 'Permanent Marker', cursive; }
   .font-bangers { font-family: 'Bangers', cursive; letter-spacing: 2px; }
   .font-caveat { font-family: 'Caveat', cursive; font-weight: 700; }
+
+  /* CANVAS AREA */
+  #canvas-wrapper {
+    width: 100%; margin: 0 auto;
+    position: relative; cursor: none; aspect-ratio: 16/9;
+    border-radius: 2px; overflow: hidden;
+    box-shadow: 0 20px 90px rgba(0,0,0,0.85);
+    background: #0a0a0a;
+  }
+  #main-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 3; }
+
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 36px; text-align: center; }
+    .hero-text { padding-right: 0; }
+    .hero-photo-col { margin-left: 0; }
+    .offer-sub { margin-left: auto; margin-right: auto; }
+    .hero-actions { justify-content: center; }
+  }
   #cursor-ring {
     position: absolute; pointer-events: none; z-index: 10;
     width: 70px; height: 70px; margin-left: -35px; margin-top: -35px;
     border-radius: 50%; border: 2px solid rgba(201,169,97,0.7);
-    transition: opacity 0.2s, transform 0.1s;
+    transition: opacity 0.2s ease, transform 0.1s ease, border-color 0.15s ease;
     opacity: 0;
     box-shadow: 0 0 12px rgba(201,169,97,0.3);
   }
   #cursor-ring.active { transform: scale(0.85); border-color: rgba(201,169,97,1); }
   #cursor-ring.in-zone { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { #cursor-ring.active { transform: none; } }
 
   .canvas-overlay {
     position: absolute; inset: 0; pointer-events: none; z-index: 4;
@@ -122,7 +132,7 @@
     position: absolute; bottom: 20px; right: 18px; z-index: 6;
     display: flex; gap: 5px;
   }
-  .pdot { width: 7px; height: 7px; border-radius: 50%; border: 1px solid rgba(201,169,97,0.5); transition: all 0.3s; }
+  .pdot { width: 7px; height: 7px; border-radius: 50%; border: 1px solid rgba(201,169,97,0.5); transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; }
   .pdot.on { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 6px rgba(201,169,97,0.6); }
 
   /* TRANSITION FLASH */
@@ -133,16 +143,19 @@
   }
 
   /* ACTIONS */
-  .hero-actions { margin-top: 28px; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
-  .btn-primary { background: var(--gold); color: var(--black); border: none; padding: 16px 40px; font-family: 'Inter', sans-serif; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; font-weight: 600; transition: all 0.3s; }
-  .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); }
-  .btn-secondary { background: transparent; color: var(--white); border: 1px solid rgba(255,255,255,0.3); padding: 16px 40px; font-family: 'Inter', sans-serif; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.3s; }
-  .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+  .hero-actions { margin-top: 4px; display: flex; gap: 16px; flex-wrap: wrap; }
+  .btn-primary { background: var(--gold); color: var(--black); border: none; padding: 16px 40px; font-family: 'Inter', sans-serif; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; font-weight: 600; transition: background-color 0.2s ease, transform 0.2s ease; }
+  .btn-secondary { background: transparent; color: var(--white); border: 1px solid rgba(255,255,255,0.3); padding: 16px 40px; font-family: 'Inter', sans-serif; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: border-color 0.2s ease, color 0.2s ease; }
+  @media (hover: hover) and (pointer: fine) {
+    .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); }
+    .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+  }
 
   /* SCROLL */
   .scroll-indicator { position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--gray-text); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; z-index: 2; animation: bounce 2s ease-in-out infinite; }
   .scroll-indicator::after { content: ''; width: 1px; height: 36px; background: linear-gradient(to bottom, var(--gold), transparent); }
   @keyframes bounce { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(8px); } }
+  @media (prefers-reduced-motion: reduce) { .scroll-indicator { animation: none; } }
 
   /* SECTIONS */
   section { padding: 100px 40px; max-width: 1400px; margin: 0 auto; }
@@ -204,8 +217,8 @@
   .contact-label { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); }
   .contact-value { font-size: 18px; font-weight: 500; }
   .contact-sub { font-size: 14px; color: var(--gray-text); }
-  .btn-whatsapp { display: inline-flex; align-items: center; gap: 10px; background: #25D366; color: var(--white); border: none; padding: 16px 32px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; text-decoration: none; margin-top: 8px; }
-  .btn-whatsapp:hover { background: #1DB954; transform: translateY(-2px); }
+  .btn-whatsapp { display: inline-flex; align-items: center; gap: 10px; background: #25D366; color: var(--white); border: none; padding: 16px 32px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: background-color 0.2s ease, transform 0.2s ease; text-decoration: none; margin-top: 8px; }
+  @media (hover: hover) and (pointer: fine) { .btn-whatsapp:hover { background: #1DB954; transform: translateY(-2px); } }
   .map-placeholder { aspect-ratio: 16/9; background: var(--gray); border: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; color: var(--gray-text); }
   .map-pin { font-size: 40px; }
   .map-text { font-size: 13px; letter-spacing: 1px; }
@@ -267,39 +280,41 @@
 </nav>
 
 <div id="hero">
-  <div class="hero-content">
-    <div class="hero-badge">Краснодар · Премиум</div>
-    <h1 class="hero-title">ИМИДЖ<br><span class="gold">КОТОРЫЙ</span><br>РАБОТАЕТ</h1>
-    <p class="hero-subtitle">Ваш стиль — наш язык</p>
-
-    <div id="canvas-wrapper">
-      <canvas id="main-canvas"></canvas>
-      <div id="text-overlay">
+  <div class="hero-grid">
+    <div class="hero-text">
+      <div class="offer-content" id="offer-content">
         <div class="offer-badge" id="offer-badge">АКЦИЯ НЕДЕЛИ</div>
-        <div class="offer-line1" id="offer-line1">ПЕРВАЯ</div>
-        <div class="offer-line2 font-marker" id="offer-line2" style="color:#c9a961">СКИДКА 20%</div>
-        <div class="offer-sub" id="offer-sub">На первое посещение. Успей записаться!</div>
+        <h1 class="offer-headline">
+          <span class="offer-line1" id="offer-line1">ПЕРВАЯ</span>
+          <span class="offer-line2 font-marker" id="offer-line2" style="color:#c9a961">СКИДКА 20%</span>
+        </h1>
+        <p class="offer-sub" id="offer-sub">На первое посещение. Успей записаться!</p>
       </div>
-      <div class="canvas-overlay"></div>
-      <div id="cursor-ring"></div>
-      <div id="flash"></div>
-
-      <div class="style-label" id="style-label">CREW CUT</div>
-      <div class="photo-counter" id="photo-counter">1 / 3</div>
-      <div class="canvas-hint" id="canvas-hint">✦ Проведи мышкой по волосам</div>
-      <div class="progress-row" id="progress-row">
-        <div class="pdot" id="p0"></div>
-        <div class="pdot" id="p1"></div>
-        <div class="pdot" id="p2"></div>
-        <div class="pdot" id="p3"></div>
-        <div class="pdot" id="p4"></div>
-        <div class="pdot" id="p5"></div>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="document.getElementById('contacts').scrollIntoView({behavior:'smooth'})">Записаться сейчас</button>
+        <button class="btn-secondary" onclick="document.getElementById('gallery').scrollIntoView({behavior:'smooth'})">Посмотреть работы</button>
       </div>
     </div>
 
-    <div class="hero-actions">
-      <button class="btn-primary" onclick="document.getElementById('contacts').scrollIntoView({behavior:'smooth'})">Записаться сейчас</button>
-      <button class="btn-secondary" onclick="document.getElementById('gallery').scrollIntoView({behavior:'smooth'})">Посмотреть работы</button>
+    <div class="hero-photo-col">
+      <div id="canvas-wrapper">
+        <canvas id="main-canvas"></canvas>
+        <div class="canvas-overlay"></div>
+        <div id="cursor-ring"></div>
+        <div id="flash"></div>
+
+        <div class="style-label" id="style-label">CREW CUT</div>
+        <div class="photo-counter" id="photo-counter">1 / 3</div>
+        <div class="canvas-hint" id="canvas-hint">✦ Проведи мышкой по волосам и бороде</div>
+        <div class="progress-row" id="progress-row">
+          <div class="pdot" id="p0"></div>
+          <div class="pdot" id="p1"></div>
+          <div class="pdot" id="p2"></div>
+          <div class="pdot" id="p3"></div>
+          <div class="pdot" id="p4"></div>
+          <div class="pdot" id="p5"></div>
+        </div>
+      </div>
     </div>
   </div>
   <div class="scroll-indicator">Scroll</div>
@@ -501,7 +516,7 @@ function applyOffer(idx) {
   }
   if (subEl) subEl.textContent = o.sub;
 }
-const BRUSH_RADIUS = 40;   // canvas pixels (before scale)
+const BRUSH_RADIUS = 58;   // canvas pixels (before scale) -- bigger since ZONE now covers hair+beard (~2x area)
 const PAINT_THRESHOLD = 0.72; // 72% of hair zone painted → next photo
 
 const wrapper   = document.getElementById('canvas-wrapper');
@@ -526,9 +541,9 @@ let mouseX = 0, mouseY = 0;
 let hintFaded = false;
 let paintedPixels = 0; // rough count updated on stroke
 
-// Hair zone relative coordinates (0..1)
-// Upper-center of the frame where hair is located in these portrait photos
-const ZONE = { x: 0.2, y: 0.02, w: 0.6, h: 0.50 };
+// Paintable zone relative coordinates (0..1) -- covers hair down through
+// the beard/chin so the whole head can be "redrawn", not just the hairline.
+const ZONE = { x: 0.14, y: 0.0, w: 0.72, h: 0.82 };
 
 function resize() {
   W = mainCanvas.offsetWidth;
@@ -544,38 +559,16 @@ function resize() {
 
 window.addEventListener('resize', resize);
 
-// ── Chroma-key: turn near-black photo background transparent so the
-// text layer behind the canvas shows through, giving a "text behind
-// the subject" look without needing real background removal.
-function chromaKey(img) {
-  const c = document.createElement('canvas');
-  c.width = img.naturalWidth || img.width;
-  c.height = img.naturalHeight || img.height;
-  const cx = c.getContext('2d');
-  cx.drawImage(img, 0, 0, c.width, c.height);
-  const imgData = cx.getImageData(0, 0, c.width, c.height);
-  const d = imgData.data;
-  const THRESH = 24, SOFT = 18;
-  for (let i = 0; i < d.length; i += 4) {
-    const lum = Math.max(d[i], d[i+1], d[i+2]);
-    if (lum < THRESH) {
-      d[i+3] = 0;
-    } else if (lum < THRESH + SOFT) {
-      d[i+3] = Math.round(((lum - THRESH) / SOFT) * d[i+3]);
-    }
-  }
-  cx.putImageData(imgData, 0, 0);
-  return c;
-}
-
-// ── Image loading
+// ── Image loading (photos stay fully opaque -- no chroma-key/background
+// removal, which is what previously made skin semi-transparent and let the
+// next photo bleed through the current one)
 function loadImages() {
   let loaded = 0;
   const loadText = document.getElementById('load-text');
   IMAGES_SRC.forEach((src, i) => {
     const img = new Image();
     img.onload = () => {
-      loadedImages[i] = chromaKey(img);
+      loadedImages[i] = img;
       loaded++;
       if (loadText) loadText.textContent = `Загрузка ${loaded}/${IMAGES_SRC.length}`;
       if (loaded === IMAGES_SRC.length) onAllLoaded();
@@ -632,16 +625,12 @@ function render() {
   mainCtx.drawImage(next, 0, 0, W, H);
   mainCtx.drawImage(tempCanvas, 0, 0, W, H);
 
-  // Step 4: subtle vignette -- source-atop keeps transparent background
-  // pixels transparent (so the text layer behind the canvas stays visible)
-  // and only darkens the already-opaque subject/cape pixels.
-  mainCtx.globalCompositeOperation = 'source-atop';
+  // Step 4: subtle vignette
   const vig = mainCtx.createRadialGradient(W/2, H/2, H*0.3, W/2, H/2, H*0.85);
   vig.addColorStop(0, 'rgba(0,0,0,0)');
   vig.addColorStop(1, 'rgba(0,0,0,0.5)');
   mainCtx.fillStyle = vig;
   mainCtx.fillRect(0, 0, W, H);
-  mainCtx.globalCompositeOperation = 'source-over';
 }
 
 function loop() {
@@ -741,7 +730,7 @@ function finishTransition() {
   setTimeout(() => { flash.style.opacity = '0'; }, 250);
 
   // Fade the offer text out before swapping its content
-  const overlay = document.getElementById('text-overlay');
+  const overlay = document.getElementById('offer-content');
   if (overlay) overlay.classList.add('fading');
 
   setTimeout(() => {
