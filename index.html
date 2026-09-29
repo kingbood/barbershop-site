@@ -909,7 +909,7 @@ function applyOffer(idx) {
 // see the note at its use in paint() for why this replaced a canvas-width-
 // relative constant. ~0.075 keeps the desktop feel from before this change.
 const BRUSH_RADIUS_RATIO = 0.075;
-const PAINT_THRESHOLD = 0.55; // 55% of hair zone painted → next photo
+const PAINT_THRESHOLD = 0.45; // 45% of hair zone painted → next photo
 
 const wrapper   = document.getElementById('canvas-wrapper');
 const mainCanvas = document.getElementById('main-canvas');
@@ -944,13 +944,20 @@ let paintedPixels = 0; // rough count updated on stroke
 // nape" bug on mobile).
 const ZONE_SRC = { x: 0.30, y: 0.0, w: 0.48, h: 0.85 };
 
+// The studio photos have a lot of empty backdrop around the subject, so the
+// plain cover-crop left them looking small/far away. HERO_ZOOM crops in
+// tighter around the same center before the cover math below runs.
+const HERO_ZOOM = 1.18;
+
 // Map the crop rectangle drawCover() would use for an iw x ih image into a
 // W x H box -- shared by drawCover (pixels) and getPaintZone (fractions).
 function getCoverRect(iw, ih, W, H) {
   const ir = iw / ih, cr = W / H;
-  if (ir > cr) { const sh = ih, sw = ih * cr; return { sx: (iw - sw) / 2, sy: 0, sw, sh }; }
-  const sw = iw, sh = iw / cr;
-  return { sx: 0, sy: (ih - sh) / 2, sw, sh };
+  let sx, sy, sw, sh;
+  if (ir > cr) { sh = ih; sw = ih * cr; sx = (iw - sw) / 2; sy = 0; }
+  else { sw = iw; sh = iw / cr; sx = 0; sy = (ih - sh) / 2; }
+  const zsw = sw / HERO_ZOOM, zsh = sh / HERO_ZOOM;
+  return { sx: sx + (sw - zsw) / 2, sy: sy + (sh - zsh) / 2, sw: zsw, sh: zsh };
 }
 
 // Convert ZONE_SRC (fractions of the source photo) into fractions of the
