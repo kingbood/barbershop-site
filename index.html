@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="format-detection" content="telephone=no">
 <title>МЭНС — Мужская парикмахерская</title>
 <!-- Brand fonts: Micronica2010 (display) + Courier New (body) embedded below as @font-face -->
 <style>
@@ -403,7 +404,7 @@
   @media (prefers-reduced-motion: reduce) { .review-card:hover { transform: none; } }
 
   .review-stars { position: relative; z-index: 1; color: var(--gold); font-size: 14px; margin-bottom: 12px; letter-spacing: 2px; }
-  .review-text { position: relative; z-index: 1; color: rgba(255,255,255,0.85); font-size: 13.5px; line-height: 1.6; margin-bottom: 16px; font-style: italic; }
+  .review-text { position: relative; z-index: 1; color: rgba(255,255,255,0.85); font-size: 13.5px; line-height: 1.65; letter-spacing: 0.2px; word-spacing: 1px; margin-bottom: 16px; }
   .review-author { position: relative; z-index: 1; display: flex; align-items: center; gap: 12px; }
   .review-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--black)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; color: var(--black); flex-shrink: 0; }
   .review-name { font-weight: 600; font-size: 14px; }
@@ -418,8 +419,12 @@
   .contact-item { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; }
   .contact-label { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); }
   .contact-value { font-size: 18px; font-weight: 500; }
+  a.contact-value { color: var(--white); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: color 0.2s ease; }
+  a.contact-value svg { flex-shrink: 0; color: var(--gold); }
+  @media (hover: hover) and (pointer: fine) { a.contact-value:hover { color: var(--gold); } }
   .contact-sub { font-size: 14px; color: var(--gray-text); }
   .contact-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
+  .contact-links > a { width: 264px; box-sizing: border-box; justify-content: center; text-align: center; padding-left: 20px; padding-right: 20px; white-space: nowrap; }
   .btn-whatsapp, .btn-telegram { display: inline-flex; align-items: center; gap: 10px; color: var(--white); border: none; padding: 16px 32px; font-family: 'Courier New', monospace; font-size: 14px; font-weight: 600; cursor: pointer; transition: background-color 0.2s ease, transform 0.2s ease; text-decoration: none; }
   .btn-whatsapp { background: #25D366; }
   .btn-telegram { background: #229ED9; }
@@ -477,6 +482,7 @@
 
     .price-card { padding: 36px 20px 32px; border-radius: 20px; }
     .price-card-logo { height: 64px; margin-bottom: 20px; }
+    .contact-links > a { width: 100%; }
 
     /* The dotted leader has no room on narrow screens -- name gets its own
        line, price drops to a right-aligned line underneath. */
@@ -818,7 +824,10 @@
       </div>
       <div class="contact-item">
         <span class="contact-label">Телефон</span>
-        <span class="contact-value">+7 (978) 661-21-22</span>
+        <a class="contact-value" href="tel:+79786612122">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+          +7 (978) 661-21-22
+        </a>
       </div>
       <div class="contact-item">
         <span class="contact-label">Режим работы</span>
@@ -856,9 +865,9 @@
 <script>
 // ─── REVIEWS ──────────────────────────────────────────────────────────────────
 const reviewsData = [
-  { name: "Артём Б.",   date: "Сентябрь 2025", text: "Спасибо за регулярно качественно проделанную работу!! Давно хотел найти себе подходящий барбер и наткнулся на этих ребят. Удобно, комфортно, качественно. Отличный сервис. Парни знают своё дело. Так что рекомендую🤟🤟", stars: 5 },
+  { name: "Артём Б.",   date: "Сентябрь 2025", text: "Спасибо за регулярно качественно проделанную работу!! Давно хотел найти себе подходящий барбер и наткнулся на этих ребят. Удобно, комфортно, качественно. Отличный сервис. Парни знают своё дело. Так что рекомендую 🤟🤟", stars: 5 },
   { name: "Сергей Н.",  date: "Август 2025",   text: "Отличный барбершоп!) Администратор вежливая, барбер Матвей очень приятный и видно, что профессионал. Подстриг сына очень классно. Сервис и качество отличные, ребята молодцы)", stars: 5 },
-  { name: "Ольга Д.",   date: "Июль 2025",     text: "Муж стрижется только тут, мастер Александр лучший в своем деле. Всегда дружелюбная атмосфера, угощают вкусным кофе, качество обслуживания на высоте🔥", stars: 5 },
+  { name: "Ольга Д.",   date: "Июль 2025",     text: "Муж стрижется только тут, мастер Александр лучший в своем деле. Всегда дружелюбная атмосфера, угощают вкусным кофе, качество обслуживания на высоте 🔥", stars: 5 },
   { name: "Владислав К.", date: "Июнь 2025",   text: "Очень доволен визитом! Приятная атмосфера, чисто, уютно, без пафоса, кайфово. Мастера — профи, учли все пожелания. Стрижка вышла ровно такой, как хотел. Вернусь ещё и буду рекомендовать друзьям.", stars: 5 },
 ];
 (function buildReviews() {
